@@ -1,0 +1,23 @@
+[package]
+name = "simple-rest"
+version = "0.2.0"
+edition = "2021"
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
+opt-level = "s"
+panic = "abort"
+strip = true
+
+[dependencies]
+actix-cors = "0.7"
+actix-http = "3.9"
+actix-web = { version = "4.9", features = ["rustls-0_23"] }
+actix-web-codegen = "4.3"
+clap = "4.5"
+dotenv = "0.15"
+env_logger = "0.11"
+log = "0.4"
+rustls = "0.23"
+rustls-pemfile = "2"

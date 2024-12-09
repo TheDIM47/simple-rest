@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "data": {
+    "value": [
+      {"id": "1", "text": "Dollar"},
+      {"id": "2", "text": "Euro"},
+      {"id": "3", "text": "Rouble"}
+    ]
+  }
+}
