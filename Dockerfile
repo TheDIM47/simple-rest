@@ -9,7 +9,7 @@ RUN echo "done!"
 ENV APP_OPTS=""
 
 FROM debian:bookworm-slim
-WORKDIR /opt/monolith-mock
+WORKDIR /opt/simple
 COPY --from=build /build/target/release/ .
 COPY --from=build /build/resources/ ./resources/
-CMD /opt/monolith-mock/simple-rest ${APP_OPTS}
+CMD /opt/simple/simple-rest ${APP_OPTS}
