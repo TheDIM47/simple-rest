@@ -30,7 +30,7 @@ impl AppError {
 }
 
 async fn respond(req: dev::ServiceRequest) -> Result<dev::ServiceResponse, Error> {
-    log::info!("{req:?}");
+    log::info!("{req:#?}");
 
     let base_dir = req.app_data::<web::Data<PathBuf>>().unwrap();
     let new_path = base_dir.join(&req.path()[1..]);
@@ -72,6 +72,8 @@ async fn main() -> std::io::Result<()> {
     let matches = cli::build_cli();
 
     let resources_dir = matches.get_one::<PathBuf>("resources").unwrap().clone();
+    let path = resources_dir.as_path().display().to_string();
+
     let tls: &bool = matches.get_one("tls").unwrap();
     let host: &Ipv4Addr = matches.get_one("host").unwrap();
     let http_port: &u16 = matches.get_one("port").unwrap();
@@ -80,21 +82,14 @@ async fn main() -> std::io::Result<()> {
     if !resources_dir.exists() {
         panic!(
             "Invalid configuration! Resource path does not exists: {}",
-            resources_dir.display()
+            &path
         );
     }
-
-    log::info!(
-        "Running on {}:{} with resources from {}",
-        host,
-        http_port,
-        &resources_dir.as_path().display()
-    );
 
     let server = HttpServer::new(move || {
         App::new()
             .wrap(middleware::NormalizePath::new(
-                middleware::TrailingSlash::Always,
+                middleware::TrailingSlash::Trim,
             ))
             .wrap(Logger::default())
             .app_data(web::Data::new(resources_dir.clone()))
@@ -103,16 +98,27 @@ async fn main() -> std::io::Result<()> {
 
     let binded = if *tls {
         let addr = format!("{}:{}", host, tls_port);
-        log::info!("Https server running on {}", addr);
+        log::info!(
+            "Https server running on {} with resources from {}",
+            addr,
+            &path
+        );
         server.bind_rustls_0_23(addr, load_rustls_config())
     } else {
         Ok(server)
     };
 
+    log::info!(
+        "Http server running on {}:{} with resources from {}",
+        host,
+        http_port,
+        &path
+    );
+
     binded?.bind((*host, *http_port))?.run().await
 }
 
-// заимствовано из примера
+// заимствовано из примера/copied from
 // https://github.com/actix/examples/blob/master/https-tls/rustls/src/main.rs
 fn load_rustls_config() -> rustls::ServerConfig {
     rustls::crypto::aws_lc_rs::default_provider()
